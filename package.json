@@ -1,0 +1,22 @@
+{
+  "name": "3003-webshot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yigithsyn/3003-webshot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yigithsyn/3003-webshot/issues"
+  },
+  "homepage": "https://github.com/yigithsyn/3003-webshot#readme",
+  "dependencies": {
+    "webshot": "^0.18.0"
+  }
+}
