@@ -17,6 +17,6 @@
   },
   "homepage": "https://github.com/yigithsyn/3003-webshot#readme",
   "dependencies": {
-    "webshot": "^0.18.0"
+    "pageres": "^4.5.1"
   }
 }
