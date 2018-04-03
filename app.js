@@ -1,10 +1,35 @@
-const Pageres = require('pageres');
+var express = require('express')
+var bodyParser = require("body-parser")
+var cors = require("cors")
 
-const pageres = new Pageres({delay: 2})
-	// .src('yeoman.io', ['480x320', '1024x768', 'iphone 5s'], {crop: true})
-	// .src('todomvc.com', ['1280x1024', '1920x1080'])
-	.src('haber7.com',["1280x1024"])
-	// .src('data:text/html;base64,PGgxPkZPTzwvaDE+', ['1024x768'])
-	.dest(__dirname+"/tmp")
-	.run()
-	.then(() => console.log('done'));
+const puppeteer = require('puppeteer');
+const devices = require('puppeteer/DeviceDescriptors');
+
+const app = express();
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
+app.use(cors())
+app.use(express.static(__dirname + "/test"))
+app.listen(3003, function () {
+  console.log("Service running on http://127.0.0.1:3003")
+})
+
+app.get('/webshot', function (req, res) {
+  (async () => {
+    console.log(req.query.url)
+    const browser = await puppeteer.launch();
+    var filename = "tmp/" + Date.now() + 'example.png'
+    // const browser = await puppeteer.launch({ executablePath: 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe' });
+    const page = await browser.newPage();
+    await page.setDefaultNavigationTimeout(6000000);
+    await page.goto(req.query.url);
+    await setTimeout(function () {
+      (async () => {
+        await page.screenshot({ path: __dirname + "/" +filename, fullPage: true });
+        await browser.close()
+        await res.sendFile(__dirname + "/" +filename)
+      })()
+    }, 00000)
+  })();
+});
+
