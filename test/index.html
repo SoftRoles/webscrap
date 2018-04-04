@@ -25,6 +25,10 @@
       width: 800px;
       text-align: center;
     }
+
+    ::-webkit-scrollbar {
+      width: 0px;
+    }
   </style>
 
 </head>
@@ -33,33 +37,58 @@
 
   <script>
     webix.ui({
-      view: "window",
-      body: {
-        view: "carousel",
-        id: "carousel",
-        width: 935,
-        height: 1500,
-        cols: [
-          { css: "image", scroll: "y", template: img, data: { src: "/webshot?url=http://google.com", title: "Google" } },
-          { css: "image", scroll: "y", template: img, data: { src: "img/1522758957424example.png" } },
-          { css: "image", scroll: "y", template: "<img src='img/1522758869087example.png' width='800'' />" },
-          { css: "image", scroll: "y", template: img, data: { src: "img/1522758869087example.png" } }
-        ],
-        navigation: {
-          type: "side"
-        }
-      },
-      head: {
-        view: "toolbar", type: "MainBar", elements: [
-          { view: "label", label: "Photobook", align: 'left' }
-        ]
-      },
-      top: 150,
-      left: 150
-    }).show();
+      id: "body",
+      cols: [
+        {},
+        {
+          view: "carousel",
+          id: "carousel",
+          width: 935,
+          height: window.innerHeight,
+          cols: [
+            {
+              id: "1", css: "image", scroll: "y", template: img,
+              data: { src: "/webshot?url=http://google.com", title: "Google" }
+            },
+            {
+              id: "2", css: "image", scroll: "y", template: img,
+              data: { src: "img/1522758957424example.png" }
+            },
+            {
+              id: "3", css: "image", scroll: "y",
+              template: "<img src='img/1522758869087example.png' width='800'' />"
+            },
+            {
+              id: "4", css: "image", scroll: "y",
+              template: img, data: { src: "img/1522758869087example.png" }
+            }
+          ],
+          navigation: {
+            type: "side"
+          },
+        },
+        {}
+      ],
+    })
 
     function img(obj) {
-      return '<img src="' + obj.src + '"  width="800" class="content" ondragstart="return false"/><div class="title">' + obj.src + '</div>'
+      return '<img src="' + obj.src + '"  width="800" "/><div class="title">' + obj.src + '</div>'
+    }
+
+    window.onkeydown = checkKey;
+    function checkKey(e) {
+      e = e || window.event;
+      var id = $$("carousel").getActiveId()
+      if (e.keyCode == '38') { $$(id).scrollTo(0, $$(id).getScrollState().y - 10) }
+      else if (e.keyCode == '40') { $$(id).scrollTo(0, $$(id).getScrollState().y + 10) }
+      else if (e.keyCode == '33') {
+        $$(id).scrollTo(0, $$(id).getScrollState().y - 3 * window.innerHeight / 4)
+      }
+      else if (e.keyCode == '34') {
+        $$(id).scrollTo(0, $$(id).getScrollState().y + 3 * window.innerHeight / 4)
+      }
+      else if (e.keyCode == '37') { $$("carousel").showPrev() }
+      else if (e.keyCode == '39') { $$("carousel").showNext() }
     }
   </script>
 </body>
