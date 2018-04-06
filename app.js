@@ -23,13 +23,9 @@ app.get('/webshot', function (req, res) {
     const page = await browser.newPage();
     await page.setDefaultNavigationTimeout(6000000);
     await page.goto(req.query.url);
-    await setTimeout(function () {
-      (async () => {
-        await page.screenshot({ path: __dirname + "/" +filename, fullPage: true });
-        await browser.close()
-        await res.sendFile(__dirname + "/" +filename)
-      })()
-    }, 00000)
+    await page.screenshot({ path: __dirname + "/" + filename, fullPage: true });
+    await browser.close()
+    await res.sendFile(__dirname + "/" + filename)
   })();
 });
 
