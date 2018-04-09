@@ -52,16 +52,20 @@
             },
             {
               id: "2", css: "image", scroll: "y", template: img,
-              data: { src: "img/1522758957424example.png" }
+              data: { src: "/webshot?url=http://tubitak.gov.tr", title: "TÜBİTAK" }
             },
-            {
-              id: "3", css: "image", scroll: "y",
-              template: "<img src='img/1522758869087example.png' width='800'' />"
-            },
-            {
-              id: "4", css: "image", scroll: "y",
-              template: img, data: { src: "img/1522758869087example.png" }
-            }
+            // {
+            //   id: "2", css: "image", scroll: "y", template: img,
+            //   data: { src: "img/1522758957424example.png" }
+            // },
+            // {
+            //   id: "3", css: "image", scroll: "y",
+            //   template: "<img src='img/1522758869087example.png' width='800'' />"
+            // },
+            // {
+            //   id: "4", css: "image", scroll: "y",
+            //   template: img, data: { src: "img/1522758869087example.png" }
+            // }
           ],
           navigation: {
             type: "side"
@@ -72,7 +76,7 @@
     })
 
     function img(obj) {
-      return '<img src="' + obj.src + '"  width="800" "/><div class="title">' + obj.src + '</div>'
+      return '<img src="' + obj.src + '"  width="800" "/><div class="title">' + obj.title + '</div>'
     }
 
     window.onkeydown = checkKey;
