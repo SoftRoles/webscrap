@@ -20,6 +20,8 @@
     "body-parser": "^1.18.2",
     "cors": "^2.8.4",
     "express": "^4.16.3",
-    "puppeteer": "^1.2.0"
+    "fetch": "^1.1.0",
+    "puppeteer": "^1.2.0",
+    "unfluff": "^3.0.0"
   }
 }
