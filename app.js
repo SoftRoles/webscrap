@@ -8,6 +8,8 @@ const devices = require('puppeteer/DeviceDescriptors');
 const unfluff = require('unfluff');
 var fetchUrl = require("fetch").fetchUrl;
 
+var MetaInspector = require('node-metainspector')
+
 const app = express();
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -75,8 +77,15 @@ app.get('/webshot', function (req, res) {
 });
 
 app.get('/extract', function (req, res) {
-  fetchUrl(req.query.url, function (error, meta, body) {
-    var data = unfluff(body)
-    res.send({ url: req.query.url, title: data.title, favicon: data.favicon })
+  var client = new MetaInspector(req.query.url, { timeout: 5000 });
+  client.on("fetch", function () {
+    res.send({ url: req.query.url, title: client.title });
   });
+  client.on("error", function (err) {
+    fetchUrl(req.query.url, function (error, meta, body) {
+      var data = unfluff(body)
+      res.send({ url: req.query.url, title: data.title})
+    });
+  });
+  client.fetch();
 });
