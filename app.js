@@ -89,7 +89,7 @@ app.get('/webscrap', require('connect-ensure-login').ensureLoggedIn({ redirectTo
 //-----------------------------------------------------------------------------
 var cheerio = require("cheerio")
 var request = require("request")
-app.get('/webscrap/api/title', function (req, res) {
+app.get('/webscrap/api/title', passport.authenticate('bearer', { session: false }), function (req, res) {
   if(req.query.url){
     request(req.query.url, function (error, response, body) {
       if (!error && response.statusCode == 200) {
