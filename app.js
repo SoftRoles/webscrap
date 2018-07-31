@@ -85,35 +85,25 @@ app.get('/webscrap', require('connect-ensure-login').ensureLoggedIn({ redirectTo
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-// webscrap : webshot
+// webscrap : title
 //-----------------------------------------------------------------------------
-app.get('/webscrap/api/webshot', passport.authenticate('bearer', { session: false }), function (req, res) {
-  (async () => {
-    console.log(req.query.url)
-    const browser = await puppeteer.launch();
-    var filename = "tmp/" + date_string() + "_" + validateAsPath(req.query.url) + ".png"
-    console.log(filename)
-    const page = await browser.newPage();
-    await page.setDefaultNavigationTimeout(6000000);
-    await page.goto(req.query.url);
-    await page.screenshot({ path: __dirname + "/" + filename, fullPage: true });
-    await browser.close()
-    await res.sendFile(__dirname + "/" + filename)
-  })();
-});
-
-app.get('/webscrap/api/title', passport.authenticate('bearer', { session: false }), function (req, res) {
-  var client = new MetaInspector(req.query.url, { timeout: 5000 });
-  client.on("fetch", function () {
-    res.send({ url: req.query.url, title: client.title });
-  });
-  client.on("error", function (err) {
-    fetchUrl(req.query.url, function (error, meta, body) {
-      var data = unfluff(body)
-      res.send({ url: req.query.url, title: data.title})
+var cheerio = require("cheerio")
+var request = require("request")
+app.get('/webscrap/api/title', function (req, res) {
+  if(req.query.url){
+    request(req.query.url, function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+        const $ = cheerio.load(body);
+        const webpageTitle = $("title").text();
+        const metaDescription =  $('meta[name=description]').attr("content");
+        const webpage = {
+          title: webpageTitle,
+          metaDescription: metaDescription
+        }
+        res.send(webpage);
+      }
     });
-  });
-  client.fetch();
+  }
 });
 
 
