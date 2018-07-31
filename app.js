@@ -98,7 +98,7 @@ app.get('/webscrap/api/title', passport.authenticate('bearer', { session: false 
         const metaDescription =  $('meta[name=description]').attr("content");
         const webpage = {
           title: webpageTitle,
-          metaDescription: metaDescription
+          meta: metaDescription
         }
         res.send(webpage);
       }
