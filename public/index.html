@@ -8,8 +8,8 @@
   <title>3003-webshot</title>
 
   <!--Webix -->
-  <link rel="stylesheet" href="bower_components/webix/codebase/skins/compact.css">
-  <script src="bower_components/webix/codebase/webix.js"></script>
+  <link rel="stylesheet" href="webscrap/bower_components/webix/codebase/skins/compact.css">
+  <script src="webscrap/bower_components/webix/codebase/webix.js"></script>
   <style>
     .image .webix_template {
       position: relative;
@@ -48,11 +48,11 @@
           cols: [
             {
               id: "1", css: "image", scroll: "y", template: img,
-              data: { src: "/webshot?url=http://google.com", title: "Google" }
+              data: { src: "/webscrap/api/title?url=http://google.com", title: "Google" }
             },
             {
               id: "2", css: "image", scroll: "y", template: img,
-              data: { src: "/webshot?url=http://tubitak.gov.tr", title: "TÜBİTAK" }
+              data: { src: "/webscrap/api/title?url=http://tubitak.gov.tr", title: "TÜBİTAK" }
             },
             // {
             //   id: "2", css: "image", scroll: "y", template: img,

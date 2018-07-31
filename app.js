@@ -1,72 +1,98 @@
-var express = require('express')
-var bodyParser = require("body-parser")
-var cors = require("cors")
+var express = require('express');
+var assert = require('assert');
+var request = require("request")
 
-const puppeteer = require('puppeteer');
-const devices = require('puppeteer/DeviceDescriptors');
+var passport = require('passport');
+var passStrategyBearer = require('passport-http-bearer').Strategy;
 
-const unfluff = require('unfluff');
-var fetchUrl = require("fetch").fetchUrl;
+var session = require('express-session');
+var mongodbSessionStore = require('connect-mongodb-session')(session);
 
-var MetaInspector = require('node-metainspector')
+var mongoClient = require("mongodb").MongoClient
+var mongodbUrl = "mongodb://127.0.0.1:27017"
 
-const app = express();
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
-app.use(cors())
-app.use(express.static(__dirname + "/test"))
-app.listen(3003, function () {
-  console.log("Service running on http://127.0.0.1:3003")
-})
+// Create a new Express application.
+var app = express();
 
-function date_string() {
-  var today = new Date()
-  var year = today.getFullYear()
-  var monthNumber = Number(today.getMonth()) + 1
-  var month = ""
-  if (monthNumber < 10) { month = "0" + String(monthNumber) }
-  else { month = String(monthNumber) }
-  var dayNumber = today.getDate()
-  var day = ""
-  if (dayNumber < 10) { day = "0" + String(dayNumber) }
-  else { day = String(dayNumber) }
-  return year + "-" + month + "-" + day
-}
+var store = new mongodbSessionStore({
+  uri: mongodbUrl,
+  databaseName: 'auth',
+  collection: 'sessions'
+});
 
-function validateAsPath(temp) {
-  if (/[/><\n\t:\u0022|?*\\]/.test(temp)) {
-    if (/[çğıöşüÇĞİÖŞÜ]/.test(temp)) {
-      // temp = temp.replace(/[/]/, " veya ")
-      // temp = temp.replace(/[>]/, " büyüktür ")
-      // temp = temp.replace(/[<]/, " küçüktür ")
-    }
-    else {
-      // temp = temp.replace(/[/]/, " or ")
-      // temp = temp.replace(/[>]/, " bigger than ")
-      // temp = temp.replace(/[<]/, " less than ")
-    }
-    temp = temp.replace(/[\n]/, " ")
-    temp = temp.replace(/[\t]/, " ")
-    // temp = temp.replace(/[\:]/,"")
-    temp = temp.replace(/[\"]/, "\'")
-    temp = temp.replace(/[|]/, ",")
-    temp = temp.replace(/[?]/, "")
-    temp = temp.replace(/[.]/, "dot")
-    temp = temp.replace(/[\\]/, " ")
-    temp = temp.replace("http://", "")
-    temp = temp.replace(".", "dot")
-  }
-  return temp
-}
+// Catch errors
+store.on('error', function (error) {
+  assert.ifError(error);
+  assert.ok(false);
+});
+
+app.use(require('express-session')({
+  secret: 'This is a secret',
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+  },
+  store: store,
+  resave: true,
+  saveUninitialized: true
+}));
+
+app.use(require('morgan')('tiny'));
+app.use(require('body-parser').json())
+app.use(require('body-parser').urlencoded({ extended: true }));
+app.use(require("cors")())
+app.use("/webscrap/bower_components", express.static(__dirname + "/public/bower_components"))
 
 
-app.get('/webshot', function (req, res) {
+//==================================================================================================
+// Bearer Passport
+//==================================================================================================
+passport.use(new passStrategyBearer(function (token, cb) {
+  mongoClient.connect(mongodbUrl + "/auth", function (err, db) {
+    db.collection("users").findOne({ token: token }, function (err, user) {
+      if (err) return cb(err)
+      if (!user) { return cb(null, false); }
+      return cb(null, user);
+      db.close();
+    });
+  });
+}));
+
+passport.serializeUser(function (user, cb) {
+  cb(null, user.username);
+});
+
+passport.deserializeUser(function (username, cb) {
+  mongoClient.connect(mongodbUrl + "/auth", function (err, db) {
+    db.collection("users").findOne({ username: username }, function (err, user) {
+      if (err) return cb(err)
+      if (!user) { return cb(null, false); }
+      return cb(null, user);
+      db.close();
+    });
+  });
+});
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.get('/webscrap', require('connect-ensure-login').ensureLoggedIn({ redirectTo: "/login?source=webscrap" }), function (req, res) {
+  if (req.user.username == "admin") res.sendFile(__dirname + '/public/index.html')
+  else { req.logout(); res.send(403); }
+});
+
+//=============================================================================
+// webscrap
+//=============================================================================
+
+//-----------------------------------------------------------------------------
+// webscrap : webshot
+//-----------------------------------------------------------------------------
+app.get('/webscrap/api/webshot', passport.authenticate('bearer', { session: false }), function (req, res) {
   (async () => {
     console.log(req.query.url)
     const browser = await puppeteer.launch();
     var filename = "tmp/" + date_string() + "_" + validateAsPath(req.query.url) + ".png"
     console.log(filename)
-    // const browser = await puppeteer.launch({ executablePath: 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe' });
     const page = await browser.newPage();
     await page.setDefaultNavigationTimeout(6000000);
     await page.goto(req.query.url);
@@ -76,7 +102,7 @@ app.get('/webshot', function (req, res) {
   })();
 });
 
-app.get('/extract', function (req, res) {
+app.get('/webscrap/api/title', passport.authenticate('bearer', { session: false }), function (req, res) {
   var client = new MetaInspector(req.query.url, { timeout: 5000 });
   client.on("fetch", function () {
     res.send({ url: req.query.url, title: client.title });
@@ -89,3 +115,9 @@ app.get('/extract', function (req, res) {
   });
   client.fetch();
 });
+
+
+app.listen(3003, function () {
+  console.log("Service running on http://127.0.0.1:3003")
+})
+
