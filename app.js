@@ -3,7 +3,7 @@ var assert = require('assert');
 var request = require("request")
 
 var passport = require('passport');
-var passStrategyBearer = require('passport-http-bearer').Strategy;
+var connectEnsureLogin = require('connect-ensure-login')
 
 var session = require('express-session');
 var mongodbSessionStore = require('connect-mongodb-session')(session);
@@ -42,21 +42,6 @@ app.use(require('body-parser').urlencoded({ extended: true }));
 app.use(require("cors")())
 app.use("/webscrap/bower_components", express.static(__dirname + "/public/bower_components"))
 
-
-//==================================================================================================
-// Bearer Passport
-//==================================================================================================
-passport.use(new passStrategyBearer(function (token, cb) {
-  mongoClient.connect(mongodbUrl + "/auth", function (err, db) {
-    db.collection("users").findOne({ token: token }, function (err, user) {
-      if (err) return cb(err)
-      if (!user) { return cb(null, false); }
-      return cb(null, user);
-      db.close();
-    });
-  });
-}));
-
 passport.serializeUser(function (user, cb) {
   cb(null, user.username);
 });
@@ -89,7 +74,7 @@ app.get('/webscrap', require('connect-ensure-login').ensureLoggedIn({ redirectTo
 //-----------------------------------------------------------------------------
 var cheerio = require("cheerio")
 var request = require("request")
-app.get('/webscrap/api/title', passport.authenticate('bearer', { session: false }), function (req, res) {
+app.get('/webscrap/api/title', connectEnsureLogin.ensureLoggedIn(), function (req, res) {
   if(req.query.url){
     request(req.query.url, function (error, response, body) {
       if (!error && response.statusCode == 200) {
