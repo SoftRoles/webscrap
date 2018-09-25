@@ -1,5 +1,6 @@
 tmp/
 test/img
+package-lock.json
 
 # Logs
 logs

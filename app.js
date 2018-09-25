@@ -47,12 +47,12 @@ passport.serializeUser(function (user, cb) {
 });
 
 passport.deserializeUser(function (username, cb) {
-  mongoClient.connect(mongodbUrl + "/auth", function (err, db) {
-    db.collection("users").findOne({ username: username }, function (err, user) {
+  mongoClient.connect(mongodbUrl, { useNewUrlParser: true }, function (err, client) {
+    client.db("auth").collection("users").findOne({ username: username }, function (err, user) {
       if (err) return cb(err)
       if (!user) { return cb(null, false); }
       return cb(null, user);
-      db.close();
+      client.close();
     });
   });
 });
