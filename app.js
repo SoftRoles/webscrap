@@ -8,8 +8,13 @@ var connectEnsureLogin = require('connect-ensure-login')
 var session = require('express-session');
 var mongodbSessionStore = require('connect-mongodb-session')(session);
 
+var mongodb;
 var mongoClient = require("mongodb").MongoClient
 var mongodbUrl = "mongodb://127.0.0.1:27017"
+mongoClient.connect(mongodbUrl, { poolSize: 10 }, function (err, client) {
+  assert.equal(null, err);
+  mongodb = client;
+});
 
 // Create a new Express application.
 var app = express();
@@ -47,13 +52,10 @@ passport.serializeUser(function (user, cb) {
 });
 
 passport.deserializeUser(function (username, cb) {
-  mongoClient.connect(mongodbUrl, { useNewUrlParser: true }, function (err, client) {
-    client.db("auth").collection("users").findOne({ username: username }, function (err, user) {
-      if (err) return cb(err)
-      if (!user) { return cb(null, false); }
-      return cb(null, user);
-      client.close();
-    });
+  mongodb.db("auth").collection("users").findOne({ username: username }, function (err, user) {
+    if (err) return cb(err)
+    if (!user) { return cb(null, false); }
+    return cb(null, user);
   });
 });
 
@@ -75,12 +77,12 @@ app.get('/webscrap', require('connect-ensure-login').ensureLoggedIn({ redirectTo
 var cheerio = require("cheerio")
 var request = require("request")
 app.get('/webscrap/api/title', connectEnsureLogin.ensureLoggedIn(), function (req, res) {
-  if(req.query.url){
+  if (req.query.url) {
     request(req.query.url, function (error, response, body) {
       if (!error && response.statusCode == 200) {
         const $ = cheerio.load(body);
         const webpageTitle = $("title").text();
-        const metaDescription =  $('meta[name=description]').attr("content");
+        const metaDescription = $('meta[name=description]').attr("content");
         const webpage = {
           title: webpageTitle,
           meta: metaDescription
