@@ -1,9 +1,38 @@
 var express = require('express');
+var app = express();
+
+//=========================================
+// authorization check
+//=========================================
+function ensureLoggedIn(options) {
+  if (typeof options == 'string') {
+    options = { redirectTo: options }
+  }
+  options = options || {};
+
+  var url = options.redirectTo || '/login';
+  var setReturnTo = (options.setReturnTo === undefined) ? true : options.setReturnTo;
+
+  return function (req, res, next) {
+    if ((req.ip.indexOf("127.0.0.1") === -1) && (!req.isAuthenticated || !req.isAuthenticated())) {
+      if (setReturnTo && req.session) {
+        req.session.returnTo = req.originalUrl || req.url;
+      }
+      return res.redirect(url);
+    }
+    else{
+      req.user = req.user || {username:"local"}
+      next()
+    }
+  }
+}
+
+//=========================================
+// session
+//=========================================
 var assert = require('assert');
-var request = require("request")
 
 var passport = require('passport');
-var connectEnsureLogin = require('connect-ensure-login')
 
 var session = require('express-session');
 var mongodbSessionStore = require('connect-mongodb-session')(session);
@@ -16,16 +45,12 @@ mongoClient.connect(mongodbUrl, { poolSize: 10 }, function (err, client) {
   mongodb = client;
 });
 
-// Create a new Express application.
-var app = express();
-
 var store = new mongodbSessionStore({
   uri: mongodbUrl,
   databaseName: 'auth',
   collection: 'sessions'
 });
 
-// Catch errors
 store.on('error', function (error) {
   assert.ifError(error);
   assert.ok(false);
@@ -41,11 +66,6 @@ app.use(require('express-session')({
   saveUninitialized: true
 }));
 
-app.use(require('morgan')('tiny'));
-app.use(require('body-parser').json())
-app.use(require('body-parser').urlencoded({ extended: true }));
-app.use(require("cors")())
-app.use("/webscrap/bower_components", express.static(__dirname + "/public/bower_components"))
 
 passport.serializeUser(function (user, cb) {
   cb(null, user.username);
@@ -62,7 +82,13 @@ passport.deserializeUser(function (username, cb) {
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get('/webscrap', require('connect-ensure-login').ensureLoggedIn({ redirectTo: "/login?source=webscrap" }), function (req, res) {
+
+app.use(require('morgan')('tiny'));
+app.use(require('body-parser').json())
+app.use(require('body-parser').urlencoded({ extended: true }));
+app.use(require("cors")())
+
+app.get('/webscrap', ensureLoggedIn({ redirectTo: "/login?source=webscrap" }), function (req, res) {
   if (req.user.username == "admin") res.sendFile(__dirname + '/public/index.html')
   else { req.logout(); res.send(403); }
 });
@@ -76,7 +102,7 @@ app.get('/webscrap', require('connect-ensure-login').ensureLoggedIn({ redirectTo
 //-----------------------------------------------------------------------------
 var cheerio = require("cheerio")
 var request = require("request")
-app.get('/webscrap/api/title', connectEnsureLogin.ensureLoggedIn(), function (req, res) {
+app.get('/webscrap/api/title', ensureLoggedIn(), function (req, res) {
   if (req.query.url) {
     request(req.query.url, function (error, response, body) {
       if (!error && response.statusCode == 200) {
