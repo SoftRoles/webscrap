@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/softroles/webscrap#readme",
   "dependencies": {
-    "@softroles/ensure-login": "^2.0.0",
+    "@softroles/ensure-login": "^2.0.1",
     "body-parser": "^1.18.2",
     "cheerio": "^1.0.0-rc.2",
     "connect-mongodb-session": "^2.0.3",
