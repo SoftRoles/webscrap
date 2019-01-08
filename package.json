@@ -1,5 +1,5 @@
 {
-  "name": "3003-webshot",
+  "name": "webscrap",
   "version": "1.0.0",
   "description": "",
   "main": "app.js",
@@ -8,18 +8,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yigithsyn/3003-webshot.git"
+    "url": "git+https://github.com/softroles/webscrap.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/yigithsyn/3003-webshot/issues"
+    "url": "https://github.com/softroles/webscrap/issues"
   },
-  "homepage": "https://github.com/yigithsyn/3003-webshot#readme",
+  "homepage": "https://github.com/softroles/webscrap#readme",
   "dependencies": {
+    "@softroles/ensure-login": "^2.0.0",
     "body-parser": "^1.18.2",
     "cheerio": "^1.0.0-rc.2",
-    "connect-ensure-login": "^0.1.1",
     "connect-mongodb-session": "^2.0.3",
     "cors": "^2.8.4",
     "express": "^4.16.3",
