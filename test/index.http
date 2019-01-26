@@ -1,0 +1,2 @@
+## get title of a webpage
+GET http://127.0.0.1:3003/webscrap/api/v1/title?url=http://www.antenio.com
