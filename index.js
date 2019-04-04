@@ -90,10 +90,11 @@ app.use(require('@softroles/authorize-bearer-token')(function (token, cb) {
   });
 }))
 
+app.use(require('@softroles/authorize-guest')())
+
 //-------------------------------------
 // common middlewares
 //-------------------------------------
-// app.use(require('@softroles/authorize-local-user')())
 app.use(require('morgan')('tiny'));
 app.use(require('body-parser').json())
 app.use(require('body-parser').urlencoded({ extended: true }));

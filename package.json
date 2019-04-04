@@ -17,7 +17,8 @@
   },
   "homepage": "https://github.com/softroles/webscrap#readme",
   "dependencies": {
-    "@softroles/authorize-bearer-token": "^1.0.0",
+    "@softroles/authorize-bearer-token": "^1.0.2",
+    "@softroles/authorize-guest": "^1.0.1",
     "@softroles/authorize-local-user": "^1.2.1",
     "argparse": "^1.0.10",
     "body-parser": "^1.18.2",
